@@ -1,0 +1,4 @@
+LDA+knn: best d=9, acc=0.9133
+LDA+logreg: best d=9, acc=0.8825
+PCA+knn: best d=50, acc=0.9564
+PCA+logreg: best d=300, acc=0.9195
