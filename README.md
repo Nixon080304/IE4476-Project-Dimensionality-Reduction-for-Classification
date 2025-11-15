@@ -11,7 +11,6 @@ The project applies:
 - Classifiers: kNN and Logistic Regression
 
 
-============================================================
 Dataset
 ============================================================
 
@@ -29,7 +28,6 @@ Preprocessing:
 - Random seed = 42 for reproducibility
 
 
-============================================================
 Dimensionality Reduction Methods
 ============================================================
 
@@ -57,7 +55,6 @@ LDA Dimensions evaluated:
 1, 2, 3, 4, 5, 6, 7, 8, 9
 
 
-============================================================
 Classifiers
 ============================================================
 
@@ -72,7 +69,6 @@ Two classifiers were applied after dimensionality reduction:
    - Linear classifier with L2 regularization
 
 
-============================================================
 Experimental Pipeline
 ============================================================
 
@@ -96,7 +92,6 @@ The code performs:
    - best_summary.txt listing best results for each method
 
 
-============================================================
 Results
 ============================================================
 
@@ -115,7 +110,6 @@ Observations:
 - LDA, although limited to 9 components, still performs competitively due to strong discriminative power.
 
 
-============================================================
 References
 ============================================================
 
