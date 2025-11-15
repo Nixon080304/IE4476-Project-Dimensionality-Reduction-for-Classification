@@ -114,7 +114,11 @@ References
 ============================================================
 
 [1] X. Jiang, "Linear Subspace Learning-Based Dimensionality Reduction," IEEE Signal Processing Magazine, 2011.
+============================================================
 [2] X. Jiang, "Asymmetric PCA and LDA," IEEE TPAMI, 2009.
+============================================================
 [3] X. Jiang, B. Mandal, and A. Kot, "Eigenfeature Regularization and Extraction," IEEE TPAMI, 2008.
+============================================================
 [4] Y. LeCun, "MNIST Database," 1998.
+============================================================
 [5] Pedregosa et al., "Scikit-learn: Machine Learning in Python," JMLR, 2011.
