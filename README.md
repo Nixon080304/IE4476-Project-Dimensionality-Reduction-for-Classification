@@ -1,125 +1,141 @@
-IE4476 Project – Dimensionality Reduction for Classification
-============================================================
+# IE4476: Dimensionality Reduction for Classification
 
-This repository contains the implementation and experiments for the IE4476 course project 
-“Dimensionality Reduction for Classification”, focusing on how PCA and LDA affect classification 
-performance on the MNIST handwritten digits dataset.
+This project compares Principal Component Analysis (PCA) and Linear Discriminant Analysis (LDA) as preprocessing methods for image classification. It evaluates each reducer with 5-nearest neighbors and logistic regression, then saves accuracy curves, confusion matrices, classification reports, and a summary of the best configuration.
 
-The project applies:
-- Principal Component Analysis (PCA) – unsupervised, variance-preserving dimensionality reduction
-- Linear Discriminant Analysis (LDA) – supervised, class-separating dimensionality reduction
-- Classifiers: kNN and Logistic Regression
+The default experiment uses the 70,000-sample MNIST dataset. A smaller scikit-learn Digits dataset option is also available for quicker local runs.
 
+## Experiment pipeline
 
-Dataset
-============================================================
+For every reducer, classifier, and requested output dimension, the script:
 
-The MNIST dataset is used in this project. It contains:
-- 70,000 handwritten digit images
-- Resolution 28×28 pixels (flattened into 784 features)
-- 10 classes (digits 0–9)
+1. Loads and normalizes the selected dataset.
+2. Creates a stratified 70/30 training and test split by default.
+3. Standardizes the input features.
+4. Fits PCA or LDA.
+5. Trains kNN or logistic regression on the reduced features.
+6. Measures test accuracy.
+7. Saves an accuracy curve for each reducer/classifier pair.
+8. Saves a confusion matrix and classification report for the best dimension.
 
-Preprocessing:
-- Loaded via sklearn `fetch_openml('mnist_784')`
-- Converted to float32
-- Normalized to [0,1]
-- Split into 70% training and 30% testing
-- Stratified sampling maintains class balance
-- Random seed = 42 for reproducibility
+### Methods
 
+| Component | Configuration |
+| --- | --- |
+| PCA | Unsupervised reduction; defaults to 10, 20, 50, 100, 200, and 300 components. |
+| LDA | Supervised reduction; defaults to 1 through 9 components for 10-class datasets. |
+| kNN | `KNeighborsClassifier(n_neighbors=5)` |
+| Logistic regression | `LogisticRegression(max_iter=2000)` |
+| Split | Stratified 70% training and 30% testing with seed 42. |
 
-Dimensionality Reduction Methods
-============================================================
+## Recorded MNIST results
 
---------------------
-1. Principal Component Analysis (PCA)
---------------------
-- Unsupervised learning method.
-- Finds orthogonal directions (principal components) that maximize variance.
-- Based on eigen-decomposition of the total scatter (covariance) matrix.
-- Retains top-k eigenvectors with largest eigenvalues.
+| Reducer | Classifier | Best dimension | Test accuracy |
+| --- | --- | ---: | ---: |
+| PCA | kNN | 50 | **95.64%** |
+| PCA | Logistic regression | 300 | **91.95%** |
+| LDA | kNN | 9 | **91.33%** |
+| LDA | Logistic regression | 9 | **88.25%** |
 
-PCA Dimensions evaluated:
-10, 20, 50, 100, 200, 300
+PCA with 50 components and kNN produced the strongest recorded result. LDA is limited to at most `number of classes - 1` components but remains competitive with only nine dimensions.
 
---------------------
-2. Linear Discriminant Analysis (LDA)
---------------------
-- Supervised method using class labels.
-- Maximizes the ratio:
-    between-class scatter / within-class scatter
-- Produces features that maximize class separability.
-- Maximum number of LDA components = C − 1 = 9 (MNIST has 10 classes).
+## Setup
 
-LDA Dimensions evaluated:
-1, 2, 3, 4, 5, 6, 7, 8, 9
+```bash
+git clone https://github.com/Nixon080304/IE4476-Project-Dimensionality-Reduction-for-Classification.git
+cd IE4476-Project-Dimensionality-Reduction-for-Classification
 
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install numpy pandas scikit-learn matplotlib
+```
 
-Classifiers
-============================================================
+MNIST is downloaded from OpenML on the first run, so that experiment requires internet access. The Digits dataset ships with scikit-learn.
 
-Two classifiers were applied after dimensionality reduction:
+## Run
 
-1. k-Nearest Neighbors (kNN)
-   - k = 5
-   - Distance-based, non-parametric classifier
+Run the default MNIST experiment:
 
-2. Logistic Regression
-   - max_iter = 2000
-   - Linear classifier with L2 regularization
+```bash
+python dim_red_classification.py
+```
 
+Run a faster experiment with the built-in Digits dataset:
 
-Experimental Pipeline
-============================================================
+```bash
+python dim_red_classification.py \
+  --dataset digits \
+  --pca_dims 10 20 30 40 50 60 \
+  --lda_dims 1 2 3 4 5 6 7 8 9
+```
 
-For each combination of:
-- Reducer (PCA or LDA)
-- Classifier (kNN or Logistic Regression)
-- Dimensionality (various values)
+Select specific methods or change the split:
 
-The code performs:
+```bash
+python dim_red_classification.py \
+  --reducers PCA \
+  --classifiers knn logreg \
+  --pca_dims 20 50 100 \
+  --test_size 0.2 \
+  --seed 42 \
+  --outdir outputs
+```
 
-1. Standardization using StandardScaler
-2. Apply PCA or LDA with chosen number of components
-3. Train classifier on reduced feature space
-4. Predict test labels
-5. Measure accuracy
-6. Save:
-   - accuracy vs. dimensionality plot
-   - confusion matrix image
-   - classification report (precision, recall, F1)
-   - results.csv summarizing all experiments
-   - best_summary.txt listing best results for each method
+## Command-line options
 
+| Option | Default | Description |
+| --- | --- | --- |
+| `--dataset` | `mnist` | Dataset: `mnist` or `digits`. |
+| `--reducers` | `PCA LDA` | Reduction methods to evaluate. |
+| `--classifiers` | `knn logreg` | Classifiers to evaluate. |
+| `--pca_dims` | `10 20 50 100 200 300` | PCA dimensions. |
+| `--lda_dims` | `1 2 3 4 5 6 7 8 9` | LDA dimensions; invalid values are filtered. |
+| `--test_size` | `0.3` | Fraction reserved for testing. |
+| `--seed` | `42` | Split and PCA random seed. |
+| `--outdir` | `outputs` | Base output directory. |
 
-Results
-============================================================
+## Outputs
 
-Best test accuracies:
+Each run creates a timestamped directory:
 
-| Method | Classifier | Best Dim | Accuracy |
-|--------|------------|----------|----------|
-| PCA    | kNN        | 50       | 95.64%   |
-| PCA    | LogReg     | 300      | 91.95%   |
-| LDA    | kNN        | 9        | 91.33%   |
-| LDA    | LogReg     | 9        | 88.25%   |
+```text
+outputs/<dataset>/<YYYYMMDD-HHMMSS>/
+├── best_summary.txt
+├── classification_report_<dataset>_<reducer>_<classifier>.txt
+├── confusion_matrices/
+│   └── <dataset>_<reducer>_<classifier>_cm.png
+├── plots/
+│   └── <dataset>_<reducer>_<classifier>.png
+└── results.csv
+```
 
-Observations:
-- PCA + kNN achieved the highest accuracy (95.64% at 50 components).
-- Logistic Regression performs best with higher PCA dimensions.
-- LDA, although limited to 9 components, still performs competitively due to strong discriminative power.
+The repository includes one complete MNIST result set under `outputs/mnist/20251101-194239`.
 
+## Repository layout
 
-References
-============================================================
+```text
+.
+├── dim_red_classification.py # Full experiment and CLI
+├── outputs/                  # Saved metrics, reports, and figures
+└── README.md
+```
 
-[1] X. Jiang, "Linear Subspace Learning-Based Dimensionality Reduction," IEEE Signal Processing Magazine, 2011.
-============================================================
-[2] X. Jiang, "Asymmetric PCA and LDA," IEEE TPAMI, 2009.
-============================================================
-[3] X. Jiang, B. Mandal, and A. Kot, "Eigenfeature Regularization and Extraction," IEEE TPAMI, 2008.
-============================================================
-[4] Y. LeCun, "MNIST Database," 1998.
-============================================================
-[5] Pedregosa et al., "Scikit-learn: Machine Learning in Python," JMLR, 2011.
-============================================================
+## Implementation notes
+
+- Input features are normalized before entering a pipeline with `StandardScaler`.
+- PCA dimensions must not exceed the available sample and feature dimensions.
+- LDA dimensions cannot exceed `number of classes - 1`.
+- The unused helper `accuracyScore` duplicates scikit-learn's `accuracy_score`; experiments use the scikit-learn implementation.
+- Full MNIST sweeps, especially kNN at several dimensions, can require substantial memory and runtime.
+
+## References
+
+1. X. Jiang, “Linear Subspace Learning-Based Dimensionality Reduction,” *IEEE Signal Processing Magazine*, 2011.
+2. X. Jiang, “Asymmetric PCA and LDA,” *IEEE Transactions on Pattern Analysis and Machine Intelligence*, 2009.
+3. X. Jiang, B. Mandal, and A. Kot, “Eigenfeature Regularization and Extraction,” *IEEE Transactions on Pattern Analysis and Machine Intelligence*, 2008.
+4. Y. LeCun et al., “The MNIST Database of Handwritten Digits,” 1998.
+5. F. Pedregosa et al., “Scikit-learn: Machine Learning in Python,” *Journal of Machine Learning Research*, 2011.
+
+## License
+
+No license file has been added. Standard copyright restrictions apply unless the author grants additional permission.
